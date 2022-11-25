@@ -1,0 +1,42 @@
+{
+
+  "fields": {
+    "author": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "publishedAt": {
+      "type": "string"
+    },
+    "source": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "type": "object"
+    },
+    "title": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "urlToImage": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
