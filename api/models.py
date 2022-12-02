@@ -3,7 +3,8 @@ from pydantic import BaseModel
 from typing import Union, List
 
 class Category(BaseModel):
-    name: str
+    id: Union[str, None] = None
+    name: str = ""
 
 class Article(BaseModel):
     publishedAt: Union[datetime, None] = None
@@ -13,7 +14,7 @@ class Article(BaseModel):
     source: Union[object, None] = None
     readAt: Union[datetime, None] = None
     url: Union[str, None] = None
-    category: Union[str, None] = None
+    category: Category = None
 
 class ArticleRequest(BaseModel):
     elastic_pointer: Union[str, None] = None

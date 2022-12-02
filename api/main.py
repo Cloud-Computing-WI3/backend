@@ -1,7 +1,8 @@
 from elasticsearch import Elasticsearch
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.openapi.utils import get_openapi
-from api.models import Article, ArticleResponse, ArticleRequest
+from fastapi.middleware.cors import CORSMiddleware
+from api.models import Article, ArticleResponse, Category
 
 app = FastAPI(
     title="News Feed Service",
@@ -14,8 +15,18 @@ app = FastAPI(
     },
     swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"}
 )
+origins = [
+    "http://localhost:3000",
+]
 
-@app.get("/", response_model=ArticleResponse)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+@app.get("/articles", response_model=ArticleResponse)
 def read_articles(category_name: str, elastic_pointer: str = None):
     page_size = 20
 
@@ -48,7 +59,7 @@ def read_articles(category_name: str, elastic_pointer: str = None):
     )
 
     # return articles
-    articles = [Article(**article["_source"]) for article in request["hits"]["hits"]]
+    articles = [Article(category=Category(**article["_source"]["source"], **article["_source"])) for article in request["hits"]["hits"]]
     elastic_pointer = request["hits"]["hits"][page_size - 1]["sort"][0]
     return ArticleResponse(elastic_pointer=elastic_pointer, articles=articles)
 
@@ -57,8 +68,8 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="Custom title",
-        version="2.5.0",
+        title="News Feed Service",
+        version="0.0.1",
         description="This is a very custom OpenAPI schema",
         routes=app.routes,
     )
