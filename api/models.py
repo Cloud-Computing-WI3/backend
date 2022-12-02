@@ -11,7 +11,6 @@ class Article(BaseModel):
     author: Union[str, None] = None
     urlToImage: Union[str, None] = None
     description: Union[str, None] = None
-    source: Union[object, None] = None
     readAt: Union[datetime, None] = None
     url: Union[str, None] = None
     category: Category = None

@@ -57,9 +57,20 @@ def read_articles(category_name: str, elastic_pointer: str = None):
         index="topic_0",
         body=doc,
     )
-
+    articles = []
+    for article in request["hits"]["hits"]:
+        raw_article = article["_source"]
+        a = Article(
+            publishedAt=raw_article["publishedAt"],
+            author=raw_article["author"],
+            urlToImage=raw_article["urlToImage"],
+            description=raw_article["description"],
+            readAt=raw_article["readAt"],
+            url=raw_article["url"],
+            category=Category(**raw_article["source"]),
+        )
+        articles.append(a)
     # return articles
-    articles = [Article(category=Category(**article["_source"]["source"], **article["_source"])) for article in request["hits"]["hits"]]
     elastic_pointer = request["hits"]["hits"][page_size - 1]["sort"][0]
     return ArticleResponse(elastic_pointer=elastic_pointer, articles=articles)
 
