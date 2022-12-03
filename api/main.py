@@ -60,16 +60,28 @@ def read_articles(category_name: str, elastic_pointer: str = None):
     articles = []
     for article in request["hits"]["hits"]:
         raw_article = article["_source"]
-        a = Article(
-            publishedAt=raw_article["publishedAt"],
-            author=raw_article["author"],
-            urlToImage=raw_article["urlToImage"],
-            description=raw_article["description"],
-            readAt=raw_article["readAt"],
-            url=raw_article["url"],
-            category=Category(**raw_article["source"]),
-            title=raw_article["title"],
-        )
+        c = Category(**raw_article["source"])
+        if c.name.lower() == "youtube":
+            a = Article(
+                publishedAt=raw_article["publishedAt"],
+                author=raw_article["author"],
+                urlToImage="https://stileex.xyz/wp-content/uploads/2019/06/download-youtube-video-1.png",
+                description=raw_article["title"],
+                readAt=raw_article["readAt"],
+                url=raw_article["url"],
+                category=c,
+            )
+        else:
+
+            a = Article(
+                publishedAt=raw_article["publishedAt"],
+                author=raw_article["author"],
+                urlToImage=raw_article["urlToImage"],
+                description=raw_article["description"],
+                readAt=raw_article["readAt"],
+                url=raw_article["url"],
+                category=c,
+            )
         articles.append(a)
     # return articles
     elastic_pointer = request["hits"]["hits"][page_size - 1]["sort"][0]
