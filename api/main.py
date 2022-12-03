@@ -68,6 +68,7 @@ def read_articles(category_name: str, elastic_pointer: str = None):
             readAt=raw_article["readAt"],
             url=raw_article["url"],
             category=Category(**raw_article["source"]),
+            title=raw_article["title"],
         )
         articles.append(a)
     # return articles

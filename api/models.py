@@ -14,6 +14,7 @@ class Article(BaseModel):
     readAt: Union[datetime, None] = None
     url: Union[str, None] = None
     category: Category = None
+    title: Union[str, None] = None
 
 class ArticleRequest(BaseModel):
     elastic_pointer: Union[str, None] = None
