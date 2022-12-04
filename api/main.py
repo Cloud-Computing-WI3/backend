@@ -26,39 +26,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.get("/articles", response_model=ArticleResponse)
-def read_articles(category_name: str, elastic_pointer: str = None):
-    page_size = 20
 
-    # define doc for query
-    doc = {
-        "size": page_size,
-        "query": {
-            "match": {
-                "category": category_name
-            }},
-        "sort": [
-            {"publishedAt": "desc"},
-        ],
-    }
-    # check if request provides pointer
-    if elastic_pointer is not None:
-        doc["search_after"] = [elastic_pointer, ]
 
+def call_elastic_search(doc: dict) -> dict:
     # make request to elastic
     my_es = Elasticsearch(
         cloud_id="News_DB:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyRmMjc3ZjYyZDQ0Yzg0MDEyOTY2ZmRjN2M2ZTQzY"
                  "jAxNiQwYTgyOGQ1ZDhlYTQ0NDc0OTExOWMzMWE5YzFmNTZiOQ==",
         http_auth=("elastic", "U3hRNSFFEuQyeGqV2kzsdnf1")
     )
-
     # call elasticsearch
-    request = my_es.search(
+    response = my_es.search(
         index="topic_0",
         body=doc,
     )
+    return response
+
+
+def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
     articles = []
-    for article in request["hits"]["hits"]:
+    for article in res["hits"]["hits"]:
         raw_article = article["_source"]
         c = Category(**raw_article["source"])
         if c.name.lower() == "youtube":
@@ -73,7 +60,6 @@ def read_articles(category_name: str, elastic_pointer: str = None):
                 category=c,
             )
         else:
-
             a = Article(
                 publishedAt=raw_article["publishedAt"],
                 author=raw_article["author"],
@@ -85,9 +71,80 @@ def read_articles(category_name: str, elastic_pointer: str = None):
                 category=c,
             )
         articles.append(a)
-    # return articles
-    elastic_pointer = request["hits"]["hits"][page_size - 1]["sort"][0]
-    return ArticleResponse(elastic_pointer=elastic_pointer, articles=articles)
+    elastic_pointer = res["hits"]["hits"][page_size - 1]["sort"][0]
+    return articles, elastic_pointer
+
+
+@app.get("/articles", response_model=ArticleResponse)
+def read_articles(category_name: str, elastic_pointer: str = None):
+    page_size = 20
+    # define doc for query
+    doc = {
+        "size": page_size,
+        "query": {
+            "match": {
+                "category": category_name
+            }},
+        "sort": [
+            {"publishedAt": "desc"},
+        ],
+    }
+    # check if request provides pointer
+    if elastic_pointer is not None:
+        doc["search_after"] = [elastic_pointer, ]
+    response = call_elastic_search(doc=doc)
+    articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
+    return ArticleResponse(elastic_pointer=pointer, articles=articles)
+
+
+@app.get("/articles_by_keywords", response_model=ArticleResponse)
+def read_articles_by_keyword(keywords: str, elastic_pointer: str = None):
+    page_size = 20
+    keyword_list = keywords.split(",")
+    # define doc for query
+    doc = {
+        "size": page_size,
+        "query": {
+            "bool": {
+                # should is roughly equivalent to boolean OR
+                "should": [{"match": {"description": keyword}} for keyword in keyword_list]
+            }
+        },
+        "sort": [
+            {"publishedAt": "desc"},
+        ],
+    }
+    # check if request provides pointer
+    if elastic_pointer is not None:
+        doc["search_after"] = [elastic_pointer, ]
+    response = call_elastic_search(doc=doc)
+    articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
+    return ArticleResponse(elastic_pointer=pointer, articles=articles)
+
+
+@app.get("/articles_by_categories", response_model=ArticleResponse)
+def read_articles_by_categories(categories: str, elastic_pointer: str = None):
+    page_size = 20
+    category_list = categories.split(",")
+    # define doc for query
+    doc = {
+        "size": page_size,
+        "query": {
+            "bool": {
+                # should is roughly equivalent to boolean OR
+                "should": [{"match": {"category": category}} for category in category_list]
+            }
+        },
+        "sort": [
+            {"publishedAt": "desc"},
+        ],
+    }
+    # check if request provides pointer
+    if elastic_pointer is not None:
+        doc["search_after"] = [elastic_pointer, ]
+    response = call_elastic_search(doc=doc)
+    articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
+    return ArticleResponse(elastic_pointer=pointer, articles=articles)
 
 
 def custom_openapi():
