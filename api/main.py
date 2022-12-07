@@ -17,7 +17,7 @@ app = FastAPI(
 )
 origins = [
     "http://localhost:3000",
-    "https://cohesive-slate-368310.uc.r.appspot.com/"
+    "https://cohesive-slate-368310.uc.r.appspot.com"
 ]
 
 app.add_middleware(
