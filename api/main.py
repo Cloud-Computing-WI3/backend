@@ -1,5 +1,5 @@
 from elasticsearch import Elasticsearch
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 from api.models import Article, ArticleResponse, Category
@@ -76,8 +76,7 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
 
 
 @app.get("/articles", response_model=ArticleResponse)
-def read_articles(category_name: str, elastic_pointer: str = None):
-    page_size = 20
+def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str = None):
     # define doc for query
     doc = {
         "size": page_size,
