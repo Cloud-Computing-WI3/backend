@@ -2,8 +2,9 @@ from elasticsearch import Elasticsearch
 from fastapi import FastAPI, Response, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
-from api.models import Article, ArticleResponse, Category
+from api.models import Article, ArticleResponse, Source, ArticlesCategoriesResponse, CategoriesAndPointers
 from iteround import saferound
+from fastapi.encoders import jsonable_encoder
 
 app = FastAPI(
     title="News Feed Service",
@@ -48,8 +49,9 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
     articles = []
     for article in res["hits"]["hits"]:
         raw_article = article["_source"]
-        c = Category(**raw_article["source"])
-        if c.name.lower() == "youtube":
+
+        s = Source(**raw_article["source"])
+        if s.name.lower() == "youtube":
             a = Article(
                 publishedAt=raw_article["publishedAt"],
                 author=raw_article["author"],
@@ -58,7 +60,8 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
                 readAt=raw_article["readAt"],
                 url=raw_article["url"],
                 title=raw_article["title"],
-                category=c,
+                Source=s,
+                category_name=raw_article["category"]
             )
         else:
             a = Article(
@@ -69,7 +72,8 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
                 readAt=raw_article["readAt"],
                 url=raw_article["url"],
                 title=raw_article["title"],
-                category=c,
+                category_name=raw_article["category"],
+                source=raw_article["source"]
             )
         articles.append(a)
     elastic_pointer = res["hits"]["hits"][page_size - 1]["sort"][0]
@@ -133,15 +137,11 @@ Expecting Request body with following schema:
 """
 
 
-@app.post("/articles_by_categories", response_model=ArticleResponse)
-async def read_articles_by_categories(request: Request):
-
-    categories_and_pointers = request.json()
+@app.post("/articles_by_categories", response_model=ArticlesCategoriesResponse)
+async def read_articles_by_categories(categories_and_pointers_body: CategoriesAndPointers):
+    # unpack to json
+    categories_and_pointers = jsonable_encoder(categories_and_pointers_body)["name"]
     page_size = 20
-    # page_sizes = "category_name1" : "psize",
-    #                                 "category_name2" : "psize",
-    #                                 "category_name3" : "psize"}
-
     # calculate individual page_size based on number of categories
     round_list = saferound([page_size / len(categories_and_pointers) for x in categories_and_pointers], places=0)
     page_sizes = {key: None for (key, value) in categories_and_pointers.items()}
@@ -151,17 +151,16 @@ async def read_articles_by_categories(request: Request):
     for i in range(0, len(round_list)):
         page_sizes[key_list[i]] = int(round_list[i])
 
-    for category_name, pg_size in page_sizes.items():
-        read_articles
+    articles = []
+    elastic_pointers = {}
 
-    '''
-      # check if request provides pointer
-    if elastic_pointer is not None:
-        doc["search_after"] = [elastic_pointer, ]
-    response = call_elastic_search(doc=doc)
-    articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
-    return ArticleResponse(elastic_pointer=pointer, articles=articles)
-     '''
+    for category_name, pg_size in page_sizes.items():
+        elastic_pointer_response, articles_response = read_articles(category_name, pg_size,
+                                                                    categories_and_pointers[category_name])
+        elastic_pointers[category_name] = elastic_pointer_response[1]
+        articles.extend([article for article in articles_response[1]])
+
+    return ArticlesCategoriesResponse(articles=articles, pointers=elastic_pointers)
 
 def custom_openapi():
     if app.openapi_schema:
