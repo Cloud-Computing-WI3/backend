@@ -3,6 +3,7 @@ from fastapi import FastAPI, Response, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 from api.models import Article, ArticleResponse, Category
+from iteround import saferound
 
 app = FastAPI(
     title="News Feed Service",
@@ -121,30 +122,46 @@ def read_articles_by_keyword(keywords: str, elastic_pointer: str = None):
     return ArticleResponse(elastic_pointer=pointer, articles=articles)
 
 
-@app.get("/articles_by_categories", response_model=ArticleResponse)
-def read_articles_by_categories(categories: str, elastic_pointer: str = None):
+
+"""
+Expecting Request body with following schema: 
+{
+    categories_and_pointers : { "category_name1" : "pointer1", 
+                                "category_name2" : "pointer2",
+                                "category_name3" : "pointer3"}
+}
+"""
+
+
+@app.post("/articles_by_categories", response_model=ArticleResponse)
+async def read_articles_by_categories(request: Request):
+
+    categories_and_pointers = request.json()
     page_size = 20
-    category_list = categories.split(",")
-    # define doc for query
-    doc = {
-        "size": page_size,
-        "query": {
-            "bool": {
-                # should is roughly equivalent to boolean OR
-                "should": [{"match": {"category": category}} for category in category_list]
-            }
-        },
-        "sort": [
-            {"publishedAt": "desc"},
-        ],
-    }
-    # check if request provides pointer
+    # page_sizes = "category_name1" : "psize",
+    #                                 "category_name2" : "psize",
+    #                                 "category_name3" : "psize"}
+
+    # calculate individual page_size based on number of categories
+    round_list = saferound([page_size / len(categories_and_pointers) for x in categories_and_pointers], places=0)
+    page_sizes = {key: None for (key, value) in categories_and_pointers.items()}
+    # get keys as list
+    key_list = list(page_sizes.keys())
+    # match categories to values, convert to int
+    for i in range(0, len(round_list)):
+        page_sizes[key_list[i]] = int(round_list[i])
+
+    for category_name, pg_size in page_sizes.items():
+        read_articles
+
+    '''
+      # check if request provides pointer
     if elastic_pointer is not None:
         doc["search_after"] = [elastic_pointer, ]
     response = call_elastic_search(doc=doc)
     articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
     return ArticleResponse(elastic_pointer=pointer, articles=articles)
-
+     '''
 
 def custom_openapi():
     if app.openapi_schema:
