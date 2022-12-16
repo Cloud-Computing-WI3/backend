@@ -6,6 +6,14 @@ from api.models import Article, ArticleResponse, Source, ArticlesCategoriesRespo
 from iteround import saferound
 from fastapi.encoders import jsonable_encoder
 
+import sys
+import json
+import redis
+
+# constants
+REDIS_TTL = 600  # keep alive for redis cache in seconds
+
+
 app = FastAPI(
     title="News Feed Service",
     version="0.0.1",
@@ -21,6 +29,7 @@ origins = [
     "http://localhost:3000",
 ]
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -28,6 +37,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def redis_connect() -> redis.client.Redis:
+    try:
+        client = redis.Redis(
+            host="redis-19498.c238.us-central1-2.gce.cloud.redislabs.com",
+            port=19498,
+            password="mxXW82wuWLgieV2nm3rpykH3tqytY52Y",
+            db=0,
+            socket_timeout=5,
+        )
+        ping = client.ping()
+        if ping is True:
+            return client
+    except redis.AuthenticationError:
+        print("AuthenticationError")
+        sys.exit(1)
+
+
+redis_client = redis_connect()
 
 
 def call_elastic_search(doc: dict) -> dict:
@@ -82,23 +111,47 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
 
 @app.get("/articles", response_model=ArticleResponse)
 def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str = None):
-    # define doc for query
-    doc = {
-        "size": page_size,
-        "query": {
-            "match": {
-                "category": category_name
-            }},
-        "sort": [
-            {"publishedAt": "desc"},
-        ],
-    }
-    # check if request provides pointer
-    if elastic_pointer is not None:
-        doc["search_after"] = [elastic_pointer, ]
-    response = call_elastic_search(doc=doc)
-    articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
-    return ArticleResponse(elastic_pointer=pointer, articles=articles)
+    # create key for redis in-memory caching
+    redis_key = category_name if elastic_pointer is None else category_name + elastic_pointer
+
+    # check if data in redis cache
+    data = redis_client.get(redis_key)
+
+    # if cache hit --> serve from cache
+    if data is not None:
+        json_data = json.loads(data)
+        return ArticleResponse(elastic_pointer=json_data["pointer"], articles=json_data["articles"])
+
+    # if cache miss --> go to api and write to cache
+    else:
+        # define doc for query
+        doc = {
+            "size": page_size,
+            "query": {
+                "match": {
+                    "category": category_name
+                }},
+            "sort": [
+                {"publishedAt": "desc"},
+            ],
+        }
+        # check if request provides pointer
+        if elastic_pointer is not None:
+            doc["search_after"] = [elastic_pointer, ]
+        response = call_elastic_search(doc=doc)
+        articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
+
+        # save response to redis and serve afterwards
+        if articles:
+            state = redis_client.set(redis_key, json.dumps(
+                {
+                    "articles": jsonable_encoder(articles),
+                    "pointer": pointer
+                }
+            ), ex=REDIS_TTL)
+
+            if state is True:
+                return ArticleResponse(elastic_pointer=pointer, articles=articles)
 
 
 @app.get("/articles_by_keywords", response_model=ArticleResponse)
