@@ -110,7 +110,7 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
 
 
 @app.get("/articles", response_model=ArticleResponse)
-def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str = None):
+def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str = None, bypass_cache: bool = False):
     # create key for redis in-memory caching
     redis_key = category_name if elastic_pointer is None else category_name + elastic_pointer
 
@@ -118,12 +118,13 @@ def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str 
     data = redis_client.get(redis_key)
 
     # if cache hit --> serve from cache
-    if data is not None:
+    if data is not None and not bypass_cache:
+        print("serve from cache...")
         json_data = json.loads(data)
         return ArticleResponse(elastic_pointer=json_data["pointer"], articles=json_data["articles"])
 
     # if cache miss --> go to api and write to cache
-    else:
+    elif data is None or bypass_cache:
         # define doc for query
         doc = {
             "size": page_size,
@@ -140,9 +141,13 @@ def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str 
             doc["search_after"] = [elastic_pointer, ]
         response = call_elastic_search(doc=doc)
         articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
+        print("serve from api...")
+
+        if bypass_cache:
+            return ArticleResponse(elastic_pointer=pointer, articles=articles)
 
         # save response to redis and serve afterwards
-        if articles:
+        elif articles and not bypass_cache:
             state = redis_client.set(redis_key, json.dumps(
                 {
                     "articles": jsonable_encoder(articles),
