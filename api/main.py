@@ -2,10 +2,11 @@ from elasticsearch import Elasticsearch
 from fastapi import FastAPI, Response, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
-from api.models import Article, ArticleResponse, Source, ArticlesCategoriesResponse, CategoriesAndPointers
+from api.models import Article, ArticleResponse, Source, ArticlesCategoriesResponse, CategoriesAndPointers, GoogleCategory
 from iteround import saferound
 from fastapi.encoders import jsonable_encoder
-
+from typing import Union, List
+from api.google_categories import GOOGLE_CATEGORIES
 import sys
 import json
 import redis
@@ -219,6 +220,12 @@ async def read_articles_by_categories(categories_and_pointers_body: CategoriesAn
         articles.extend([article for article in articles_response[1]])
 
     return ArticlesCategoriesResponse(articles=articles, pointers=elastic_pointers)
+
+
+@app.get("/google_categories", response_model=Union[GoogleCategory, List[GoogleCategory]])
+async def read_google_articles():
+    categories = [GoogleCategory(**cat) for cat in GOOGLE_CATEGORIES]
+    return categories
 
 def custom_openapi():
     if app.openapi_schema:

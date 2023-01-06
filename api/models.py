@@ -35,3 +35,7 @@ class ArticlesCategoriesResponse(BaseModel):
 
 class CategoriesAndPointers(BaseModel):
     name: Dict[Union[str, None], Union[str, None]]
+
+class GoogleCategory(BaseModel):
+    category: str
+    name: str
