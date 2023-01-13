@@ -1,6 +1,6 @@
 """
-This code grabs all the articles from the DB that have the same readAt (so one batch) and categorises them / adds keywords
-until the articles in the next Batch have been labeled.
+This code grabs all the articles from the DB that have the same readAt (so one batch) and categorises them / adds keywords.
+Continues until it finds articles that already have been labeled before.
 
 
 Pseudo Algo:
@@ -9,14 +9,19 @@ Get the newest timestamp (a)
 Get the next timestamp after (b)
 Grab all the articles for the timestamp (a) and label them with keywords / categories
 Write them back into elasticsearch
-call next batch / check if they have been labeled
+call next batch (based on timestamp b) / check if they have been labeled
 """
 
 import requests
 from elasticsearch import Elasticsearch
 from datetime import datetime
 
+
 def extract_keywords(text):
+    """
+    This method extracts all the keywords using the google natural language API based on a given Text.
+    :param text: Text from which the keywords are to be extracted.
+    """
     # Set the API key for the Google Natural Language Processing API
     api_key = 'AIzaSyCRHHSb8Mqw22QlcILOoWwypjHs2FqBrR0'
     # Set the text to analyze
@@ -53,6 +58,10 @@ def extract_keywords(text):
 
 
 def identify_google_category(text):
+    """
+    This method identifies a category using the google natural language API based on a given Text.
+    :param text: Text from which the category is to be identified.
+    """
     # Set the API key for the Google Natural Language Processing API
     api_key = 'AIzaSyCRHHSb8Mqw22QlcILOoWwypjHs2FqBrR0'
     # Set the text to analyze
@@ -98,7 +107,7 @@ def identify_google_category(text):
         return ''
 
 
-# create elasticsearch client
+# create elasticsearch client instance
 my_elastic = Elasticsearch(
     cloud_id="News_DB:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyRmMjc3ZjYyZ"
              "DQ0Yzg0MDEyOTY2ZmRjN2M2ZTQzYjAxNiQwYTgyOGQ1ZDhlYTQ0NDc0OTExOWMzMWE5YzFmNTZiOQ==",
@@ -106,32 +115,32 @@ my_elastic = Elasticsearch(
 )
 
 latest_article_pointer = None
-# Iterate over Articles until the sun turns cold
+# Iterate over Articles until the sun turns cold, batches have been labeled or there are no more articles to label.
 while True:
     # call elasticsearch, get the newest readAt article
     doc = {
-        "size": 1,
+        "size": 20,
         "sort": [
             {"readAt": "desc"},
         ],
     }
-    # check if request provides pointer
+    # check if request provides pointer, if so then set it in the doc
     if latest_article_pointer is not None:
         doc["search_after"] = [latest_article_pointer, ]
+    # perform query
     response = my_elastic.search(
         index="topic_0",
         body=doc,
     )
+    # Extract article and pointer
     latest_article_pointer = response['hits']['hits'][0]['sort'][0]
     latest_article = response['hits']['hits'][0]['_source']
-    # check if keyword exists
-    """
-    # if latest_article['keywords'] is not None:
-    #    print('article has keywords')
-    #    exit()
-    """
+    # check if keyword exists, if so then exit
+    if latest_article['keywords'] is not None:
+        print('article has keywords')
+        exit()
+
     # now let's grab all the entries with that particular timestamp
-    # convert string to actual timestamp
     query = {
         "query": {
             "match_phrase": {
@@ -139,23 +148,25 @@ while True:
             }
         }
     }
-    # Execute elasticsearch scrolling, to get all articles within that batch
-    # Initialize the scroll
+    # Execute elasticsearch scrolling, to get all articles within that batch and initialize the scroll
     page = my_elastic.search(
         index="topic_0",
         body=query,
         scroll='2m',
         size=1,
     )
+    # extract id for scrolling
     sid = page['_scroll_id']
-    original_scroll_size = page['hits']['total']['value']
-    print(f'total scroll size of current batch {original_scroll_size}')
+    # save original scroll size
+    scroll_size = page['hits']['total']['value']
+    print(f'total scroll size of current batch {scroll_size}')
     # Start scrolling
     print("Scrolling...")
-    while (original_scroll_size > 0):
+    # scroll until there are no more results
+    while (scroll_size > 0):
         # Add Google Keywords and Categories
         for hit in page['hits']['hits']:
-            print(f'current scroll: {original_scroll_size} with: author: {hit["_source"]["author"]}, '
+            print(f'current scroll: {scroll_size} with: author: {hit["_source"]["author"]}, '
                   f'readAt: {hit["_source"]["readAt"]}'
                   f' title: {hit["_source"]["title"]}')
             # extract article keywords
@@ -177,24 +188,18 @@ while True:
                 index="topic_0",
                 id=hit['_id'],
                 body={
-                    'doc': new_fields
-                }
+                    "doc": {
+                        "keywords": ' '.join(article_keywords),
+                        "google_categories": ' '.join(article_google_category)
+                    }}
             )
-
+        # let's scrollll
         page = my_elastic.scroll(scroll_id=sid, scroll='2m')
         # Update the scroll ID
         sid = page['_scroll_id']
-        original_scroll_size -= 1
+        # reduce scroll size, indicating article has been labeled
+        scroll_size -= 1
 
-
-
-
-
-
-
-   # response = my_elastic.search(index="topic_0", body=query)
-
-    print('elo')
 
 
 
