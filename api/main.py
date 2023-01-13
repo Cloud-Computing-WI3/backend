@@ -189,7 +189,7 @@ def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str 
         if elastic_pointer is not None:
             doc["search_after"] = [elastic_pointer, ]
         response = call_elastic_search(doc=doc)
-        articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
+        articles, pointer = get_articles_and_pointer(res=response)
         print("serve from api...")
 
         if bypass_cache:
