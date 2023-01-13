@@ -8,7 +8,7 @@ API_KEY = "AIzaSyCRHHSb8Mqw22QlcILOoWwypjHs2FqBrR0"
 API_URL = "https://language.googleapis.com/v1/documents:classifyText?key=" + API_KEY
 
 # define keyword itself
-keyword = "Elon Musk"
+keyword = "FC-Bayern"
 # Set the text to be analyzed full of fillwords
 text = f"{keyword} and ourselves as herserf for each all above into through nor me and then by doing and and or and as she her and or"
 
