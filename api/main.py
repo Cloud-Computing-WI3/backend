@@ -77,8 +77,12 @@ def call_elastic_search(doc: dict) -> dict:
 
 def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
     articles = []
+    unique_articles = set()
     for article in res["hits"]["hits"]:
         raw_article = article["_source"]
+        if raw_article["publishedAt"] in unique_articles:
+            continue
+        unique_articles.add(raw_article["publishedAt"])
 
         s = Source(**raw_article["source"])
         if s.name.lower() == "youtube":
