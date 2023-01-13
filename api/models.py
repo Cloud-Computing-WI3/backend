@@ -33,8 +33,14 @@ class ArticlesCategoriesResponse(BaseModel):
     articles: List[Article]
     pointers: Dict[str, str]
 
+
+class CategoryPointer(BaseModel):
+    name: str
+    pointer: Union[str, None]
+
+
 class CategoriesAndPointers(BaseModel):
-    name: Dict[Union[str, None], Union[str, None]]
+    categories: List[CategoryPointer]
 
 class GoogleCategory(BaseModel):
     category: str
