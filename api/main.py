@@ -2,7 +2,8 @@ from elasticsearch import Elasticsearch
 from fastapi import FastAPI, Response, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
-from api.models import Article, ArticleResponse, Source, ArticlesCategoriesResponse, CategoriesAndPointers, GoogleCategory
+from api.models import Article, ArticleResponse, Source, ArticlesCategoriesResponse, CategoriesAndPointers, \
+    GoogleCategory
 from iteround import saferound
 from fastapi.encoders import jsonable_encoder
 from typing import Union, List
@@ -13,7 +14,6 @@ import redis
 
 # constants
 REDIS_TTL = 600  # keep alive for redis cache in seconds
-
 
 app = FastAPI(
     title="News Feed Service",
@@ -30,7 +30,6 @@ origins = [
     "http://localhost:3000",
     "https://cohesive-slate-368310.uc.r.appspot.com"
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -186,7 +185,6 @@ def read_articles_by_keyword(keywords: str, elastic_pointer: str = None):
     return ArticleResponse(elastic_pointer=pointer, articles=articles)
 
 
-
 """
 Expecting Request body with following schema: 
 {
@@ -200,11 +198,13 @@ Expecting Request body with following schema:
 @app.post("/articles_by_categories", response_model=ArticlesCategoriesResponse)
 async def read_articles_by_categories(categories_and_pointers_body: CategoriesAndPointers):
     # unpack to json
-    categories_and_pointers = jsonable_encoder(categories_and_pointers_body)["name"]
+    categories_and_pointers = jsonable_encoder(categories_and_pointers_body)["categories"]
     page_size = 20
     # calculate individual page_size based on number of categories
     round_list = saferound([page_size / len(categories_and_pointers) for x in categories_and_pointers], places=0)
-    page_sizes = {key: None for (key, value) in categories_and_pointers.items()}
+    page_sizes = dict()
+    for category in categories_and_pointers:
+        page_sizes[category["name"]] = None
     # get keys as list
     key_list = list(page_sizes.keys())
     # match categories to values, convert to int
@@ -215,8 +215,8 @@ async def read_articles_by_categories(categories_and_pointers_body: CategoriesAn
     elastic_pointers = {}
 
     for category_name, pg_size in page_sizes.items():
-        elastic_pointer_response, articles_response = read_articles(category_name, pg_size,
-                                                                    categories_and_pointers[category_name])
+        elastic_pointer_response, articles_response = read_articles(category_name, pg_size, next(
+            item["pointer"] for item in categories_and_pointers if item["name"] == category_name))
         elastic_pointers[category_name] = elastic_pointer_response[1]
         articles.extend([article for article in articles_response[1]])
 
@@ -227,6 +227,7 @@ async def read_articles_by_categories(categories_and_pointers_body: CategoriesAn
 async def read_google_articles():
     categories = [GoogleCategory(**cat) for cat in GOOGLE_CATEGORIES]
     return categories
+
 
 def custom_openapi():
     if app.openapi_schema:
