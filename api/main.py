@@ -11,10 +11,23 @@ from api.google_categories import GOOGLE_CATEGORIES
 import sys
 import json
 import redis
+"""
+This file is the Backend API Component, it utilizes FastAPI, communicates with elasticsearch / redis and the frontend. 
+It's responsible for sending articles back and forth. 
+Three main endpoints are implemented: 
+- read_articles()
+- read_articles_by_keyword()
+- read_articles_by_categories()
+
+"""
+
+
+
 
 # constants
 REDIS_TTL = 600  # keep alive for redis cache in seconds
 
+# Create FastAPI instance
 app = FastAPI(
     title="News Feed Service",
     version="0.0.1",
@@ -26,11 +39,14 @@ app = FastAPI(
     },
     swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"}
 )
+
+# Define endpoints for CORS Middleware
 origins = [
     "http://localhost:3000",
     "https://cohesive-slate-368310.uc.r.appspot.com"
 ]
 
+# Define middleware component for FastAPI
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -41,7 +57,11 @@ app.add_middleware(
 
 
 def redis_connect() -> redis.client.Redis:
+    """
+    This function connects to a redis client.
+    """
     try:
+        # create instance
         client = redis.Redis(
             host="redis-19498.c238.us-central1-2.gce.cloud.redislabs.com",
             port=19498,
@@ -49,6 +69,7 @@ def redis_connect() -> redis.client.Redis:
             db=0,
             socket_timeout=5,
         )
+        # ping client
         ping = client.ping()
         if ping is True:
             return client
@@ -61,7 +82,10 @@ redis_client = redis_connect()
 
 
 def call_elastic_search(doc: dict) -> dict:
-    # make request to elastic
+    """
+    This function is responsible for calling the elasticsearch cloud instance.
+    """
+    # Create Elasticsearch instance
     my_es = Elasticsearch(
         cloud_id="News_DB:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyRmMjc3ZjYyZDQ0Yzg0MDEyOTY2ZmRjN2M2ZTQzY"
                  "jAxNiQwYTgyOGQ1ZDhlYTQ0NDc0OTExOWMzMWE5YzFmNTZiOQ==",
@@ -75,16 +99,25 @@ def call_elastic_search(doc: dict) -> dict:
     return response
 
 
-def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
+def get_articles_and_pointer(res) -> tuple[list, str]:
+    """
+    Map elasticsearch response into the FastAPI Article Model so it can be send to the Frontend.
+    :param res: This parameter is the elasticsearch result that contains articles.
+    """
     articles = []
+    # make sure we don't have duplicate articles
     unique_articles = set()
+    # iterate over articles in res
     for article in res["hits"]["hits"]:
+        # get article itself
         raw_article = article["_source"]
         if raw_article["publishedAt"] in unique_articles:
             continue
+        # add to set, duplicates will be removed because of datastructure (set)
         unique_articles.add(raw_article["publishedAt"])
-
+        # check the name of the source
         s = Source(**raw_article["source"])
+        # if it's a youtube video we want to give it a generic image link
         if s.name.lower() == "youtube":
             a = Article(
                 publishedAt=raw_article["publishedAt"],
@@ -98,6 +131,7 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
                 category_name=raw_article["category"]
             )
         else:
+            # all other articles...
             a = Article(
                 publishedAt=raw_article["publishedAt"],
                 author=raw_article["author"],
@@ -110,12 +144,22 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
                 source=raw_article["source"]
             )
         articles.append(a)
-    elastic_pointer = res["hits"]["hits"][page_size - 1]["sort"][0]
+    # get elastic pointer of last article
+    elastic_pointer = res["hits"]["hits"][-1]["sort"][0]
     return articles, elastic_pointer
 
 
 @app.get("/articles", response_model=ArticleResponse)
 def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str = None, bypass_cache: bool = False):
+    """
+    First of three main endpoints.
+    Read articles for every predefined category, uses cache-aside pattern in order to minimize requests to elastic
+    and loading times.
+    :param category_name: Names of categories.
+    :param page_size: Number of articles to be send to frontend.
+    :param elastic_pointer: Elastic pointer for 'search_after' parameter.
+    :param bypass_cache: Defines wether to ignore redis cache.
+    """
     # create key for redis in-memory caching
     redis_key = category_name if elastic_pointer is None else category_name + elastic_pointer
 
@@ -165,8 +209,16 @@ def read_articles(category_name: str, page_size: int = 20, elastic_pointer: str 
 
 
 @app.get("/articles_by_keywords", response_model=ArticleResponse)
-def read_articles_by_keyword(keywords: str, elastic_pointer: str = None):
-    page_size = 20
+def read_articles_by_keyword(keywords: str, page_size: int = 20, elastic_pointer: str = None):
+    """
+        Second of three main endpoints.
+        This endpoint gives results for keywords and supports an elastic_pointer in order to do utilize the 'search_after'
+        parameter of elasticsearch.
+        :param keywords: Keywords for which to look in the elasticsearch DB.
+        :param page_size: Number of articles to be delivered.
+        :param elastic_pointer: Elastic Pointer to be utilized by the 'search_after' parameter in elasticsearch.
+
+        """
     keyword_list = keywords.split(",")
     # define doc for query
     doc = {
@@ -181,29 +233,24 @@ def read_articles_by_keyword(keywords: str, elastic_pointer: str = None):
             {"publishedAt": "desc"},
         ],
     }
-    # check if request provides pointer
+    # check if request provides pointer, if so set pointer
     if elastic_pointer is not None:
         doc["search_after"] = [elastic_pointer, ]
     response = call_elastic_search(doc=doc)
-    articles, pointer = get_articles_and_pointer(res=response, page_size=page_size)
+    articles, pointer = get_articles_and_pointer(res=response)
     return ArticleResponse(elastic_pointer=pointer, articles=articles)
 
 
-"""
-Expecting Request body with following schema: 
-{
-    categories_and_pointers : { "category_name1" : "pointer1", 
-                                "category_name2" : "pointer2",
-                                "category_name3" : "pointer3"}
-}
-"""
-
-
 @app.post("/articles_by_categories", response_model=ArticlesCategoriesResponse)
-async def read_articles_by_categories(categories_and_pointers_body: CategoriesAndPointers):
+async def read_articles_by_categories(categories_and_pointers_body: CategoriesAndPointers, page_size: int = 20):
+    """
+    Third of the three main endpoints.
+    :param categories_and_pointers_body: Body that contains a list of multiple objects = [{'category_name' : name,
+    'pointer': pointer_value}].
+    :param page_size: Number of results.
+    """
     # unpack to json
     categories_and_pointers = jsonable_encoder(categories_and_pointers_body)["categories"]
-    page_size = 20
     # calculate individual page_size based on number of categories
     round_list = saferound([page_size / len(categories_and_pointers) for x in categories_and_pointers], places=0)
     page_sizes = dict()
@@ -217,7 +264,7 @@ async def read_articles_by_categories(categories_and_pointers_body: CategoriesAn
 
     articles = []
     elastic_pointers = {}
-
+    # make a call to elastic via 'read_articles' for each chosen category.
     for category_name, pg_size in page_sizes.items():
         elastic_pointer_response, articles_response = read_articles(category_name, pg_size, next(
             item["pointer"] for item in categories_and_pointers if item["name"] == category_name))
