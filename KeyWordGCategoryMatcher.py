@@ -14,6 +14,7 @@ call next batch (based on timestamp b) / check if they have been labeled
 
 import requests
 from elasticsearch import Elasticsearch
+from config import keyword_google_matcher_config
 from datetime import datetime
 
 
@@ -23,7 +24,7 @@ def extract_keywords(text):
     :param text: Text from which the keywords are to be extracted.
     """
     # Set the API key for the Google Natural Language Processing API
-    api_key = 'AIzaSyCRHHSb8Mqw22QlcILOoWwypjHs2FqBrR0'
+    api_key = keyword_google_matcher_config['google_api_key']
     # Set the text to analyze
 
     # Set the API endpoint URL
@@ -63,7 +64,7 @@ def identify_google_category(text):
     :param text: Text from which the category is to be identified.
     """
     # Set the API key for the Google Natural Language Processing API
-    api_key = 'AIzaSyCRHHSb8Mqw22QlcILOoWwypjHs2FqBrR0'
+    api_key = keyword_google_matcher_config['google_api_key']
     # Set the text to analyze
 
     # Set the API endpoint URL
@@ -109,9 +110,8 @@ def identify_google_category(text):
 
 # create elasticsearch client instance
 my_elastic = Elasticsearch(
-    cloud_id="News_DB:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyRmMjc3ZjYyZ"
-             "DQ0Yzg0MDEyOTY2ZmRjN2M2ZTQzYjAxNiQwYTgyOGQ1ZDhlYTQ0NDc0OTExOWMzMWE5YzFmNTZiOQ==",
-    http_auth=("elastic", "U3hRNSFFEuQyeGqV2kzsdnf1")
+    cloud_id=keyword_google_matcher_config['elastic_cloud_id'],
+    http_auth=(keyword_google_matcher_config['elastic_cloud_user'], keyword_google_matcher_config['elastic_cloud_pass'])
 )
 
 latest_article_pointer = None

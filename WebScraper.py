@@ -7,6 +7,11 @@ from elasticsearch import Elasticsearch
 from confluent_kafka import Producer
 from config import conf
 
+"""
+This Scraper scrapes /Wochenrezepte von Chefkoch.de and sends the articles as messages to kafka. 
+"""
+
+
 
 def delivery_report(err, msg):
     """ Called once for each message produced to indicate delivery result.

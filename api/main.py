@@ -276,11 +276,17 @@ async def read_articles_by_categories(categories_and_pointers_body: CategoriesAn
 
 @app.get("/google_categories", response_model=Union[GoogleCategory, List[GoogleCategory]])
 async def read_google_articles():
+    """
+    This function provides all the categories given by google.
+    """
     categories = [GoogleCategory(**cat) for cat in GOOGLE_CATEGORIES]
     return categories
 
 
 def custom_openapi():
+    """
+    This function sets up the API
+    """
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(

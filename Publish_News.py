@@ -15,11 +15,15 @@ def publish_news(request):
     """
     Publishes News from Newsapi.org to confluent kafka on the cloud. Checks with elasticsearch and only publishes
     articles that are newer than the latest article from the elastic db.
-    :param request:
+    :param request: Makes sure that it works on google cloud function.
     :return:
     """
 
     def process_category(category_name):
+        """
+        Takes a category, calls Newsapi.org and sends articles to kafka.
+        :param category_name: Name of the category for which articles are to be retrieved.
+        """
         # Build String that will be submitted for search
         submit_string = base_url + api_key + "&" + f"category={category_name}" + "&" + \
                         "country=gb" + "&" + "pageSize=100"
