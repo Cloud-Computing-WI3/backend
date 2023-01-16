@@ -106,7 +106,10 @@ def get_articles_and_pointer(res, page_size: int = 20) -> tuple[list, str]:
                 source=raw_article["source"]
             )
         articles.append(a)
-    elastic_pointer = res["hits"]["hits"][page_size - 1]["sort"][0]
+    if len(res["hits"]["hits"]) > 0:
+        elastic_pointer = res["hits"]["hits"][page_size - 1]["sort"][0]
+    else:
+        elastic_pointer = None
     return articles, elastic_pointer
 
 
