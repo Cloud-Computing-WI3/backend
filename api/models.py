@@ -1,6 +1,10 @@
 from datetime import datetime, time, timedelta
 from pydantic import BaseModel
 from typing import Union, List, Dict
+"""
+This file defines all the models used by FastAPI in the main.py
+"""
+
 
 class Source(BaseModel):
     id: Union[str, None] = None

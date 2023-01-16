@@ -1,4 +1,6 @@
 """
+Categories provided by google for the natural language processing API
+Each article get's a category based on it's description / content / title (checkout KeyWordGCategoryMatcher.py)
 See https://cloud.google.com/natural-language/docs/categories
 """
 
