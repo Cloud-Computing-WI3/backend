@@ -53,7 +53,8 @@ To access data in Redis via python, the `get`-function can then be called in com
 For further implementation details refer to `api/main.py` or the [official redis-py docs](https://redis.readthedocs.io/en/latest/). 
 
 # Deployment 
-![Cloud functions](https://codelabs.developers.google.com/static/codelabs/cloud-starting-cloudfunctions-v2/img/51b03178ac54a85f.png)
+<img src="https://codelabs.developers.google.com/static/codelabs/cloud-starting-cloudfunctions-v2/img/51b03178ac54a85f.png" width="50" height="50" alt="Cloud function">
+
 This section descripes the deployment of code to the google cloud function service. 
 ### [Google Cloud Functions](https://cloud.google.com/functions)
 Google Cloud Functions allows a user to run small snippets of code as a function in the cloud. It provides an endpoint that can be called to pass arguments and activate the function. 
@@ -67,7 +68,8 @@ After configuring the cloud function the code itself can be added.
 ![Mask Cloud function three](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_function3.png)
 In the next mask, the correct coding language (and version) and entry point has to be chosen. The entry point is the name of the (first) function that is to be executed when the endpoint is called. 
 # Deployment 
-<img src="https://storage.googleapis.com/gweb-cloudblog-publish/images/cloud-scheduler-512-color.max-600x600.png" width="200" height="200" alt="Cloud scheduler">
+<img src="https://storage.googleapis.com/gweb-cloudblog-publish/images/cloud-scheduler-512-color.max-600x600.png" width="50" height="50" alt="Cloud scheduler">
+
 This section describes the configuration of the [Google cloud scheduler](https://cloud.google.com/scheduler?hl=en) that is used to interact with the cloud functions. 
 ### Configuration steps 
 At first the name, frequency and timezone have to be defined. The timezone should be the same one as the google cloud functions run on. The Frequency is defined using the [cron job format](https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules#defining_the_job_schedule). 
@@ -76,7 +78,8 @@ After having configured this part a new mask comes up. The address of the cloud 
 ![Cloud Scheduler two](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_scheduler2.png)
 Some optional settings can be configured additionally, however this is unecessary for our this case. 
 # Deployment 
-![Confluent Kafka](https://cdn.confluent.io/wp-content/uploads/seo-logo-meadow.png)
+<img src="https://cdn.confluent.io/wp-content/uploads/seo-logo-meadow.png" width="200" height="200" alt="Confluent Kafka">
+
 This section describes the deployment, setup and configuration of the Confluent Cloud environment. 
 ### Configuration steps 
 At first a new kafka environment has to be chosen, the free one should be sufficient.
@@ -88,3 +91,28 @@ After the kafka environment is setup a cluster has to be configured
 As before, the FREE plan should be sufficient. Just click through the configuration.
 ![Kafka4](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/kafka_env4.png)
 Now a topic has to be created that in which the messages can be written. 
+In order to extract these messages to elasticsearch a new connector has to be created 
+-> In the Connectors tab select an elasticsearch Service sink connector. 
+Select the topic from which the messages are to be extracted. 
+![Connector1](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/connector1.png)
+You can define an access option, Global access is the easiest, hence it will be selected for this use case.
+![Connector2](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/connector2.png)
+In the next step kafka wants the connection details from an elasticsearch cloud instance. 
+![Connector3](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/connector_user.png)
+To find the connection URI go to 'Manage Cluster' 
+Then click 'Copy endpoint', don't forget to add the correct port '9243 and enter user credentials. 
+![el-conn-conf1](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic_config1.png)
+![el-conn-conf2](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic_config1.png)
+In the configuration settings, select JSON and make sure that the configuration matches the screenshot. This step is very important, all the settings must match. Otherwise the connector will not work!
+![adv_config](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/advanced%20configuration.png)
+Select the smallest instance, review the settings and launch the connector. 
+Confluent can now send messages to elasticsearch! 
+# Deployment 
+<img src="https://mms.businesswire.com/media/20191022005864/en/751270/22/elastic-logo-H-full_color.jpg" width="50" height="50" alt="Elastic Cloud">
+
+This section describes the configuration & deployment of an [Elastic Cloud](https://cloud.google.com/scheduler?hl=en) instance that is used to store articles.
+### Configuration steps 
+Setting up the Elastic cloud instance is very easy but a few things are imnportant: 1. Make sure to select the smallest size possible, otherwise the instance will cost 600+ Dollars a month. 2. Select the right version 3. Write down the elastic user that can be used to access the database. 
+![elastic_deploy1](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic1.png)
+![elastic_deploy2](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic2.png)
+![elastic_deploy3](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic3.png)
