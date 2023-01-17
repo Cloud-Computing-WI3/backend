@@ -105,47 +105,50 @@ def get_articles_and_pointer(res) -> tuple[list, str]:
     :param res: This parameter is the elasticsearch result that contains articles.
     """
     articles = []
+    elastic_pointer = None
     # make sure we don't have duplicate articles
     unique_articles = set()
-    # iterate over articles in res
-    for article in res["hits"]["hits"]:
-        # get article itself
-        raw_article = article["_source"]
-        if raw_article["publishedAt"] in unique_articles:
-            continue
-        # add to set, duplicates will be removed because of datastructure (set)
-        unique_articles.add(raw_article["publishedAt"])
-        # check the name of the source
-        s = Source(**raw_article["source"])
-        # if it's a youtube video we want to give it a generic image link
-        if s.name.lower() == "youtube":
-            a = Article(
-                publishedAt=raw_article["publishedAt"],
-                author=raw_article["author"],
-                urlToImage="https://stileex.xyz/wp-content/uploads/2019/06/download-youtube-video-1.png",
-                description=raw_article["title"],
-                readAt=raw_article["readAt"],
-                url=raw_article["url"],
-                title=raw_article["title"],
-                Source=s,
-                category_name=raw_article["category"]
-            )
-        else:
-            # all other articles...
-            a = Article(
-                publishedAt=raw_article["publishedAt"],
-                author=raw_article["author"],
-                urlToImage=raw_article["urlToImage"],
-                description=raw_article["description"],
-                readAt=raw_article["readAt"],
-                url=raw_article["url"],
-                title=raw_article["title"],
-                category_name=raw_article["category"],
-                source=raw_article["source"]
-            )
-        articles.append(a)
-    # get elastic pointer of last article
-    elastic_pointer = res["hits"]["hits"][-1]["sort"][0]
+
+    if len(res["hits"]["hits"]) > 0:
+        # iterate over articles in res
+        for article in res["hits"]["hits"]:
+            # get article itself
+            raw_article = article["_source"]
+            if raw_article["publishedAt"] in unique_articles:
+                continue
+            # add to set, duplicates will be removed because of datastructure (set)
+            unique_articles.add(raw_article["publishedAt"])
+            # check the name of the source
+            s = Source(**raw_article["source"])
+            # if it's a youtube video we want to give it a generic image link
+            if s.name.lower() == "youtube":
+                a = Article(
+                    publishedAt=raw_article["publishedAt"],
+                    author=raw_article["author"],
+                    urlToImage="https://stileex.xyz/wp-content/uploads/2019/06/download-youtube-video-1.png",
+                    description=raw_article["title"],
+                    readAt=raw_article["readAt"],
+                    url=raw_article["url"],
+                    title=raw_article["title"],
+                    Source=s,
+                    category_name=raw_article["category"]
+                )
+            else:
+                # all other articles...
+                a = Article(
+                    publishedAt=raw_article["publishedAt"],
+                    author=raw_article["author"],
+                    urlToImage=raw_article["urlToImage"],
+                    description=raw_article["description"],
+                    readAt=raw_article["readAt"],
+                    url=raw_article["url"],
+                    title=raw_article["title"],
+                    category_name=raw_article["category"],
+                    source=raw_article["source"]
+                )
+            articles.append(a)
+        # get elastic pointer of last article
+        elastic_pointer = res["hits"]["hits"][-1]["sort"][0]
     return articles, elastic_pointer
 
 
@@ -238,7 +241,7 @@ def read_articles_by_keyword(keywords: str, page_size: int = 20, elastic_pointer
         doc["search_after"] = [elastic_pointer, ]
     response = call_elastic_search(doc=doc)
     articles, pointer = get_articles_and_pointer(res=response)
-    return ArticleResponse(elastic_pointer=pointer, articles=articles)
+    return ArticleResponse(elastic_pointer=pointer if pointer is not None else elastic_pointer, articles=articles)
 
 
 @app.post("/articles_by_categories", response_model=ArticlesCategoriesResponse)
