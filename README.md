@@ -51,3 +51,14 @@ overall latency while at the same time reducing load on ElasticSearch.
 The *RedisInsights* GUI can be used to track which key-value pairs are currently stored.
 To access data in Redis via python, the `get`-function can then be called in combination with the searched key.
 For further implementation details refer to `api/main.py` or the [official redis-py docs](https://redis.readthedocs.io/en/latest/). 
+
+# Deployment 
+![Cloud functions](https://codelabs.developers.google.com/static/codelabs/cloud-starting-cloudfunctions-v2/img/51b03178ac54a85f.png)
+This section descripes the deployment of code to the google cloud function service. 
+### [Google Cloud Functions](https://cloud.google.com/functions)
+Google Cloud Functions allows a user to run small snippets of code as a function in the cloud. It provides an endpoint that can be called to pass arguments and activate the function. 
+### Deployment steps 
+The first mask asls the user to enter a name for the function which defines the endpoint of the function itself. This endpoint will be used by the cloud scheduler to activate a function. Aside from the name a maximum runtime, max number of instances and so on can also be defined. However this is not necessary to deploy the code. 
+
+
+
