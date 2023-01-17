@@ -58,7 +58,33 @@ This section descripes the deployment of code to the google cloud function servi
 ### [Google Cloud Functions](https://cloud.google.com/functions)
 Google Cloud Functions allows a user to run small snippets of code as a function in the cloud. It provides an endpoint that can be called to pass arguments and activate the function. 
 ### Deployment steps 
-The first mask asls the user to enter a name for the function which defines the endpoint of the function itself. This endpoint will be used by the cloud scheduler to activate a function. Aside from the name a maximum runtime, max number of instances and so on can also be defined. However this is not necessary to deploy the code. 
+The first mask asks the user to enter a name for the function which defines the endpoint of the function itself. This endpoint will be used by the cloud scheduler to activate a function. 
+![Mask Cloud Function one](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_function_1.png)
 
-
-
+Aside from the name, a maximum runtime, max number of instances and so on can also be defined. However this is not necessary to deploy the code but the size of the instance could be reduced in order to save cost. 
+![Mask Cloud function two](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_function2.png)
+After configuring the cloud function the code itself can be added. 
+![Mask Cloud function three](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_function3.png)
+In the next mask, the correct coding language (and version) and entry point has to be chosen. The entry point is the name of the (first) function that is to be executed when the endpoint is called. 
+# Deployment 
+<img src="https://storage.googleapis.com/gweb-cloudblog-publish/images/cloud-scheduler-512-color.max-600x600.png" width="200" height="200" alt="Cloud scheduler">
+This section describes the configuration of the [Google cloud scheduler](https://cloud.google.com/scheduler?hl=en) that is used to interact with the cloud functions. 
+### Configuration steps 
+At first the name, frequency and timezone have to be defined. The timezone should be the same one as the google cloud functions run on. The Frequency is defined using the [cron job format](https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules#defining_the_job_schedule). 
+![Cloud Scheduler one](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_scheduler1.png)
+After having configured this part a new mask comes up. The address of the cloud function, auth type have to be configured accordingly in order ot execute the cloud function deployed before. 
+![Cloud Scheduler two](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_scheduler2.png)
+Some optional settings can be configured additionally, however this is unecessary for our this case. 
+# Deployment 
+![Confluent Kafka](https://cdn.confluent.io/wp-content/uploads/seo-logo-meadow.png)
+This section describes the deployment, setup and configuration of the Confluent Cloud environment. 
+### Configuration steps 
+At first a new kafka environment has to be chosen, the free one should be sufficient.
+![Kafka1](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/kafka_env1.png)
+Now a cloud provider has to be selected, in our case Google Cloud is the correct provider. 
+![Kafka2](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/kafka_env2.png)
+After the kafka environment is setup a cluster has to be configured
+![Kafka3](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/kafka_env3.png)
+As before, the FREE plan should be sufficient. Just click through the configuration.
+![Kafka4](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/kafka_env4.png)
+Now a topic has to be created that in which the messages can be written. 
