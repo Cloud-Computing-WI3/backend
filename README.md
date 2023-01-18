@@ -1,14 +1,21 @@
 ![Logo](https://avatars.githubusercontent.com/u/117459812?s=200&v=4)
 #   Newsify - News Feed Service
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/GoogleCloud-%234285F4.svg?&style=for-the-badge&logo=googlecloud&logoColor=white)
+![Elasticsearch](https://img.shields.io/badge/Elasticsearch-%23005571.svg?&style=for-the-badge&logo=elasticsearch&logoColor=white)
+![ElasticCloud](https://img.shields.io/badge/ElasticCloud-%23005571.svg?&style=for-the-badge&logo=elasticcloud&logoColor=white)
+![Confluence](https://img.shields.io/badge/ConfluentKafka-%23172B4D.svg?&style=for-the-badge&logo=&logoColor=white)
+
+
 
 ## Table of Content
 - [Getting started](#getting-started)
-- [Prerequisites](#prerequisites)
 - [Deployment](#deployment)
     - Redis (in-memory caching)
     - Google Cloud Functions
     - Google Cloud Scheduler
     - Confluent Kafka
+    - Elasticsearch
     - Elastic Cloud
 - [Repository Overview](#repository-overview)
 
@@ -29,13 +36,9 @@
 
 
 ##  Deployment
-![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white)
-
-### Prerequisites
-* [Redis.io](https://redis.io/)
-
 
 ### Redis (in-memory caching) 
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?&style=for-the-badge&logo=redis&logoColor=white)
 
 [Redis](https://redis.io/) is an open-source data store that provides powerful in-memory 
 caching functionality. "Newsify" implements redis using the so-called 
@@ -126,7 +129,7 @@ In the configuration settings, select JSON and make sure that the configuration 
 Select the smallest instance, review the settings and launch the connector. 
 Confluent can now send messages to elasticsearch! 
 
-## Elastic Cloud {#elastic-cloud}
+## Elastic Cloud
 <img src="https://mms.businesswire.com/media/20191022005864/en/751270/22/elastic-logo-H-full_color.jpg" width="50" height="50" alt="Elastic Cloud">
 
 This section describes the configuration & deployment of an [Elastic Cloud](https://cloud.google.com/scheduler?hl=en) instance that is used to store articles.
