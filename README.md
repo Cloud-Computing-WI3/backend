@@ -5,11 +5,11 @@
 - [Getting started](#getting-started)
 - [Prerequisites](#prerequisites)
 - [Deployment](#deployment)
-    - [Redis (in-memory caching)](#redis)
+    - [Redis (in-memory caching)](#Redis-(in-memory-caching))
     - [Google Cloud Functions](#Google-Cloud-Functions )
-    - [Google Cloud Scheduler](#cloud-scheduler)
-    - [Confluent Kafka](#confleunt-kafka)
-    - [Elastic Cloud](#elastic-cloud)
+    - [Google Cloud Scheduler](#Google-Cloud-Scheduler)
+    - [Confluent Kafka](#Confleunt-Kafka)
+    - [Elastic Cloud](#Elastic-Cloud)
 - [Repository Overview](#repository-overview)
 
 
