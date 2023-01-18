@@ -5,11 +5,11 @@
 - [Getting started](#getting-started)
 - [Prerequisites](#prerequisites)
 - [Deployment](#deployment)
-    - [Redis (in-memory caching)](#Redis-(in-memory-caching))
-    - [Google Cloud Functions](#Google-Cloud-Functions )
-    - [Google Cloud Scheduler](#Google-Cloud-Scheduler)
-    - [Confluent Kafka](#Confleunt-Kafka)
-    - [Elastic Cloud](#Elastic-Cloud)
+    - Redis (in-memory caching)
+    - Google Cloud Functions
+    - Google Cloud Scheduler
+    - Confluent Kafka
+    - Elastic Cloud
 - [Repository Overview](#repository-overview)
 
 
@@ -35,7 +35,7 @@
 * [Redis.io](https://redis.io/)
 
 
-### Redis (in-memory caching) {redis}
+### Redis (in-memory caching) 
 
 [Redis](https://redis.io/) is an open-source data store that provides powerful in-memory 
 caching functionality. "Newsify" implements redis using the so-called 
@@ -66,7 +66,7 @@ The *RedisInsights* GUI can be used to track which key-value pairs are currently
 To access data in Redis via python, the `get`-function can then be called in combination with the searched key.
 For further implementation details refer to `api/main.py` or the [official redis-py docs](https://redis.readthedocs.io/en/latest/). 
 
-## Google Cloud Functions {cloud-functions}
+## Google Cloud Functions 
 <img src="https://codelabs.developers.google.com/static/codelabs/cloud-starting-cloudfunctions-v2/img/51b03178ac54a85f.png" width="50" height="50" alt="Cloud function">
 
 This section descripes the deployment of code to the google cloud function service. 
@@ -83,7 +83,7 @@ After configuring the cloud function the code itself can be added.
 In the next mask, the correct coding language (and version) and entry point has to be chosen. The entry point is the name of the (first) function that is to be executed when the endpoint is called. 
 
 
-## Google Cloud Scheduler {cloud-scheduler}
+## Google Cloud Scheduler 
 <img src="https://storage.googleapis.com/gweb-cloudblog-publish/images/cloud-scheduler-512-color.max-600x600.png" width="50" height="50" alt="Cloud scheduler">
 
 This section describes the configuration of the [Google cloud scheduler](https://cloud.google.com/scheduler?hl=en) that is used to interact with the cloud functions. 
@@ -95,7 +95,7 @@ After having configured this part a new mask comes up. The address of the cloud 
 Some optional settings can be configured additionally, however this is unecessary for our this case. 
 
 
-## Confluent Kafka {confleunt-kafka}
+## Confluent Kafka 
 <img src="https://cdn.confluent.io/wp-content/uploads/seo-logo-meadow.png" width="200" height="200" alt="Confluent Kafka">
 
 This section describes the deployment, setup and configuration of the Confluent Cloud environment. 
@@ -126,7 +126,7 @@ In the configuration settings, select JSON and make sure that the configuration 
 Select the smallest instance, review the settings and launch the connector. 
 Confluent can now send messages to elasticsearch! 
 
-## Elastic Cloud {elastic-cloud}
+## Elastic Cloud {#elastic-cloud}
 <img src="https://mms.businesswire.com/media/20191022005864/en/751270/22/elastic-logo-H-full_color.jpg" width="50" height="50" alt="Elastic Cloud">
 
 This section describes the configuration & deployment of an [Elastic Cloud](https://cloud.google.com/scheduler?hl=en) instance that is used to store articles.
