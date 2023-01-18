@@ -156,8 +156,8 @@ Backend
 ├── Dockerfile
 ├── KeyWordGCategoryMatcher.py
 ├── Publish_News.py
-├── README.md
 ├── requirements.txt
 ├── schema.json
 └── WebScraper.py
 ```
+The "Backend" directory contains all the necessary files for the backend of the project. The "api" directory holds the main functionality of the backend, including the "google_categories.py" file which contains the functionality related to Google categories, the "main.py" file which serves as the entry point for the API, the "models.py" file where the database models are defined, and the "test.py" file for testing the API. The "app.yaml" file is used for deploying the application to Google App Engine. The "config.py" file contains the configuration for the application. "control_elastic-connector.py" and "KeyWordGCategoryMatcher.py" contain the functionality for connecting and matching with the Elasticsearch. "Publish_News.py" is used to pupblish news from newsapi.org to confluent kafka on the cloud. It checks with elasticsearch and only publishes articles that are newer than the latest article from the elastic db.The "Dockerfile" is used for creating a Docker image. "requirements.txt" contains the project dependencies. "schema.json" contains the schema of the API and "WebScraper.py" contains the code for scraping the data.
