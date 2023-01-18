@@ -35,7 +35,7 @@
 * [Redis.io](https://redis.io/)
 
 
-### Redis (in-memory caching){redis}
+### Redis (in-memory caching) {redis}
 
 [Redis](https://redis.io/) is an open-source data store that provides powerful in-memory 
 caching functionality. "Newsify" implements redis using the so-called 
