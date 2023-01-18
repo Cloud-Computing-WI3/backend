@@ -140,3 +140,21 @@ Setting up the Elastic cloud instance is very easy but a few things are imnporta
 After having configured & deployed the different cloud services, the API Keys, URLs and so on will have to be added to the 'config.py' file. 
 
 ##  Repository Overview
+```
+Backend
+├── api
+│   ├── google_categories.py
+│   ├── main.py
+│   ├── models.py
+│   └── test.py
+├── app.yaml
+├── config.py
+├── control_elastic-connector.py
+├── Dockerfile
+├── KeyWordGCategoryMatcher.py
+├── Publish_News.py
+├── README.md
+├── requirements.txt
+├── schema.json
+└── WebScraper.py
+```
