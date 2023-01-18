@@ -116,3 +116,6 @@ Setting up the Elastic cloud instance is very easy but a few things are imnporta
 ![elastic_deploy1](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic1.png)
 ![elastic_deploy2](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic2.png)
 ![elastic_deploy3](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/elastic3.png)
+
+# Configuration 
+After having configured & deployed the different cloud services, the API Keys, URLs and so on will have to be added to the 'config.py' file. 
