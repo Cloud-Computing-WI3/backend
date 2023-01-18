@@ -1,4 +1,18 @@
-#   News Feed Service
+![Logo](https://avatars.githubusercontent.com/u/117459812?s=200&v=4)
+#   Newsify - News Feed Service
+
+## Table of Content
+- [Getting started](#getting-started)
+- [Prerequisites](#prerequisites)
+- [Deployment](#deployment)
+    - [Redis (in-memory caching)](#Redis)
+    - [Google Cloud Functions](#Google-Cloud-Functions )
+    - [Google Cloud Scheduler](#cloud-scheduler)
+    - [Confluent Kafka](#confleunt-kafka)
+    - [Elastic Cloud](#elastic-cloud)
+- [Repository Overview](#repository-overview)
+
+
 ##  Getting started
 1. Open a  terminal window inside this folder (`backend`)
 2. Run `python3 -m venv venv` to install virtual environment
@@ -52,7 +66,7 @@ The *RedisInsights* GUI can be used to track which key-value pairs are currently
 To access data in Redis via python, the `get`-function can then be called in combination with the searched key.
 For further implementation details refer to `api/main.py` or the [official redis-py docs](https://redis.readthedocs.io/en/latest/). 
 
-# Deployment 
+## Google Cloud Functions {cloud-functions}
 <img src="https://codelabs.developers.google.com/static/codelabs/cloud-starting-cloudfunctions-v2/img/51b03178ac54a85f.png" width="50" height="50" alt="Cloud function">
 
 This section descripes the deployment of code to the google cloud function service. 
@@ -67,7 +81,9 @@ Aside from the name, a maximum runtime, max number of instances and so on can al
 After configuring the cloud function the code itself can be added. 
 ![Mask Cloud function three](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_function3.png)
 In the next mask, the correct coding language (and version) and entry point has to be chosen. The entry point is the name of the (first) function that is to be executed when the endpoint is called. 
-# Deployment 
+
+
+## Google Cloud Scheduler {cloud-scheduler}
 <img src="https://storage.googleapis.com/gweb-cloudblog-publish/images/cloud-scheduler-512-color.max-600x600.png" width="50" height="50" alt="Cloud scheduler">
 
 This section describes the configuration of the [Google cloud scheduler](https://cloud.google.com/scheduler?hl=en) that is used to interact with the cloud functions. 
@@ -77,7 +93,9 @@ At first the name, frequency and timezone have to be defined. The timezone shoul
 After having configured this part a new mask comes up. The address of the cloud function, auth type have to be configured accordingly in order ot execute the cloud function deployed before. 
 ![Cloud Scheduler two](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/cloud_scheduler2.png)
 Some optional settings can be configured additionally, however this is unecessary for our this case. 
-# Deployment 
+
+
+## Confluent Kafka {confleunt-kafka}
 <img src="https://cdn.confluent.io/wp-content/uploads/seo-logo-meadow.png" width="200" height="200" alt="Confluent Kafka">
 
 This section describes the deployment, setup and configuration of the Confluent Cloud environment. 
@@ -107,7 +125,8 @@ In the configuration settings, select JSON and make sure that the configuration 
 ![adv_config](https://github.com/Cloud-Computing-WI3/.github/blob/main/images/advanced%20configuration.png)
 Select the smallest instance, review the settings and launch the connector. 
 Confluent can now send messages to elasticsearch! 
-# Deployment 
+
+## Elastic Cloud {elastic-cloud}
 <img src="https://mms.businesswire.com/media/20191022005864/en/751270/22/elastic-logo-H-full_color.jpg" width="50" height="50" alt="Elastic Cloud">
 
 This section describes the configuration & deployment of an [Elastic Cloud](https://cloud.google.com/scheduler?hl=en) instance that is used to store articles.
@@ -119,3 +138,5 @@ Setting up the Elastic cloud instance is very easy but a few things are imnporta
 
 # Configuration 
 After having configured & deployed the different cloud services, the API Keys, URLs and so on will have to be added to the 'config.py' file. 
+
+##  Repository Overview
