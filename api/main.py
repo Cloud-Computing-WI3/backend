@@ -282,7 +282,12 @@ async def read_google_articles():
     """
     This function provides all the categories given by google.
     """
-    categories = [GoogleCategory(**cat) for cat in GOOGLE_CATEGORIES]
+    print(GOOGLE_CATEGORIES)
+    categories = GOOGLE_CATEGORIES
+    for google_category in GOOGLE_CATEGORIES:
+        if not any(item["name"] == google_category["category"] and item["category"] == google_category["category"] for item in categories):
+            categories.append({"category": google_category["category"], "name": google_category["category"]})
+    categories = [GoogleCategory(**cat) for cat in categories]
     return categories
 
 
