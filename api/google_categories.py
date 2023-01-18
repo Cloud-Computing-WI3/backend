@@ -634,6 +634,10 @@ for item in array:
         category = split[-2]
         name = split[-1]
         dict = {"category": category, "name": name}
+
+        cat = {"category": category, "name": category}
+        if cat not in GOOGLE_CATEGORIES:
+            GOOGLE_CATEGORIES.append(cat)
         if dict not in GOOGLE_CATEGORIES:
             GOOGLE_CATEGORIES.append(dict)
 GOOGLE_CATEGORIES = sorted(GOOGLE_CATEGORIES, key=lambda x: x["category"])

@@ -223,13 +223,19 @@ def read_articles_by_keyword(keywords: str, page_size: int = 20, elastic_pointer
 
         """
     keyword_list = keywords.split(",")
+    conditions = []
+    for keyword in keyword_list:
+        if any(keyword == google_category["name"] for google_category in GOOGLE_CATEGORIES):
+            conditions.append({"match": {"google_categories": keyword}})
+        else:
+            conditions.append({"match": {"keywords": keyword}})
     # define doc for query
     doc = {
         "size": page_size,
         "query": {
             "bool": {
                 # should is roughly equivalent to boolean OR
-                "should": [{"match": {"description": keyword}} for keyword in keyword_list]
+                "should": conditions
             }
         },
         "sort": [
@@ -282,12 +288,7 @@ async def read_google_articles():
     """
     This function provides all the categories given by google.
     """
-    print(GOOGLE_CATEGORIES)
-    categories = GOOGLE_CATEGORIES
-    for google_category in GOOGLE_CATEGORIES:
-        if not any(item["name"] == google_category["category"] and item["category"] == google_category["category"] for item in categories):
-            categories.append({"category": google_category["category"], "name": google_category["category"]})
-    categories = [GoogleCategory(**cat) for cat in categories]
+    categories = [GoogleCategory(**cat) for cat in GOOGLE_CATEGORIES]
     return categories
 
 
