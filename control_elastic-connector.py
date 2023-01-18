@@ -11,9 +11,9 @@ def cloud_control(request):
     # confluent cloud information
     environment_id = cloud_control_conf['environment_id']
     kafka_cluster_id = cloud_control_conf['kafka_cluster_id']
-    connector_name = cloud_control_conf['ElasticsearchSinkConnector_0']
-    API_Key = cloud_control_conf['PIOMXPW2EUC6EFLE']
-    secret = cloud_control_conf['"Dy9LQxyQo5yn23c//smhZ3LW6ehHMmtk0b9S0oHAtqoKNj36MCufPgncGnsmGEf5"']
+    connector_name = cloud_control_conf['connector_name']
+    API_Key = cloud_control_conf['API_Key']
+    secret = cloud_control_conf['secret']
 
     url_string = f'https://api.confluent.cloud/connect/v1/environments/{environment_id}' \
                  f'/clusters/{kafka_cluster_id}/connectors/{connector_name}/status'

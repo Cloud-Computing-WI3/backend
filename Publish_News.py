@@ -10,7 +10,8 @@ from elasticsearch import Elasticsearch
 
 # Code for NewsAPI.org
 
-
+# boolean if the database is empty, set to true
+first_run = True
 def publish_news(request):
     """
     Publishes News from Newsapi.org to confluent kafka on the cloud. Checks with elasticsearch and only publishes
@@ -26,7 +27,7 @@ def publish_news(request):
         """
         # Build String that will be submitted for search
         submit_string = base_url + api_key + "&" + f"category={category_name}" + "&" + \
-                        "country=gb" + "&" + "pageSize=100"
+                        "country=us" + "&" + "pageSize=100"
         # variable to check if an HTTPError was raised in order to skip the rest of the function
         httperror = False
         try:
@@ -63,23 +64,31 @@ def publish_news(request):
                 cloud_id="News_DB:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjQ0MyRmMjc3ZjYyZDQ0Yzg0MDEyOTY2ZmRjN2M2ZTQzYjAxNiQwYTgyOGQ1ZDhlYTQ0NDc0OTExOWMzMWE5YzFmNTZiOQ==",
                 http_auth=("elastic", "U3hRNSFFEuQyeGqV2kzsdnf1")
             )
-            # look for latest entry inside category
-            rezz = my_es.search(
-                index='topic_0',
-                size=1,
-                query={"query_string": {"query": category_name, "fields": ["category"]}},
-                sort={"publishedAt": {"order": "desc", "unmapped_type": "date"}}
-            )
-            # grab the latest time from the first (0th entry) record
-            latest_article_time = rezz['hits']['hits'][0]['_source']['publishedAt']
-            # dict with articles that are newer than latest article from elastic db
-            new_articles = []
-            # check all articles to see which are newer than latest article from db
-            for article in my_dict['articles']:
-                # is the article newer than my latest article timestamp?
-                if article['publishedAt'] > latest_article_time:
-                    # if so append it to my list
+            # if it's not the first run then skip this part, there are no entries in the db!
+            if not first_run:
+                # look for latest entry inside category
+                rezz = my_es.search(
+                    index='topic_0',
+                    size=1,
+                    query={"query_string": {"query": category_name, "fields": ["category"]}},
+                    sort={"publishedAt": {"order": "desc", "unmapped_type": "date"}}
+                )
+                # grab the latest time from the first (0th entry) record
+                latest_article_time = rezz['hits']['hits'][0]['_source']['publishedAt']
+                # dict with articles that are newer than latest article from elastic db
+                new_articles = []
+                # check all articles to see which are newer than latest article from db
+                for article in my_dict['articles']:
+                    # is the article newer than my latest article timestamp?
+                    if article['publishedAt'] > latest_article_time:
+                        # if so append it to my list
+                        new_articles.append(article)
+            elif first_run:
+                new_articles = []
+                # check all articles to see which are newer than latest article from db
+                for article in my_dict['articles']:
                     new_articles.append(article)
+
             # does my list actually have entries?
             if len(new_articles) != 0:
                 print(len(new_articles), " published to kafka")
