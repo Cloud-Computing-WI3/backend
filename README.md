@@ -130,7 +130,7 @@ Select the smallest instance, review the settings and launch the connector.
 Confluent can now send messages to elasticsearch! 
 
 ## Elastic Cloud
-<img src="https://mms.businesswire.com/media/20191022005864/en/751270/22/elastic-logo-H-full_color.jpg" width="50" height="50" alt="Elastic Cloud">
+![ElasticCloud](https://img.shields.io/badge/ElasticCloud-%23005571.svg?&style=for-the-badge&logo=elasticcloud&logoColor=white)
 
 This section describes the configuration & deployment of an [Elastic Cloud](https://cloud.google.com/scheduler?hl=en) instance that is used to store articles.
 ### Configuration steps 
